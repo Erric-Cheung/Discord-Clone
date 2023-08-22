@@ -1,0 +1,13 @@
+.nav-container {
+  padding: 12px 0 0;
+  width: 72px;
+  background-color: #1e2124;
+  flex-grow: 1;
+  flex-shrink: 0;
+  overflow: scroll;
+}
+
+
+.nav-container::-webkit-scrollbar {
+  display: none;
+}

@@ -1,0 +1,45 @@
+.container {
+  display: flex;
+  align-items: center;
+  height: 62px;
+  margin-left: 30px;
+  margin-right: 20px;
+  cursor: pointer;
+  border-top: 1px solid #404246;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.nametag {
+  padding-bottom: 4px;
+  padding-left: 8px;
+  padding-top: 4px;
+}
+
+.panel-title {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+  color: white;
+}
+
+.subtext {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 13px;
+}
+
+.container:hover {
+  background-color: #404246;
+  margin: 0 10px 0 20px;
+  padding: 16px 10px;
+  border-radius: 8px;
+}
+
+.actions{
+  display: flex;
+  flex-direction: row;
+}

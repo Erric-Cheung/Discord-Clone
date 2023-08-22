@@ -1,0 +1,25 @@
+.header {
+  padding: 20px 30px;
+}
+
+.title {
+  margin-bottom: 8px;
+  font-size: 16px;
+  line-height: 20px;
+  text-transform: uppercase;
+  color: white;
+}
+
+.description {
+  color: grey;
+}
+
+.container {
+  display: flex;
+  max-height: 50vh;
+  border-radius: 8px;
+  padding-left: 16px;
+  background-color: #383a40;
+  overflow-x: hidden;
+  overflow-y: auto;
+}

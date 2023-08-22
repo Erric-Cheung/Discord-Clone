@@ -1,0 +1,62 @@
+.server-item-wrapper {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  position: relative;
+}
+
+.pill-wrapper {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  width: 8px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.pill {
+  position: absolute;
+  display: block;
+  width: 8px;
+  border-radius: 0 4px 4px 0;
+  margin-left: -4px;
+  background-color: white;
+  opacity: 1;
+  height: 40px;
+  transform: none;
+}
+
+.icon-wrapper {
+  position: absolute;
+  border-radius: 24px;
+  width: 48px;
+  height: 48px;
+  overflow: clip;
+  transition: all 0.1s ease-in-out;
+}
+
+.icon-image {
+  display: block;
+  width: 48px;
+  height: 48px;
+  -o-object-fit: cover;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.icon-wrapper:hover{
+  border-radius: 16px;
+}
+
+.selected{
+  position: absolute;
+  border-radius: 16px;
+  width: 48px;
+  height: 48px;
+  overflow: clip;
+  transition: all 0.1s ease-in-out;
+}
