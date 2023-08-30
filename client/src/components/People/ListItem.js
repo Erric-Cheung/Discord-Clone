@@ -1,11 +1,9 @@
 import classes from "./ListItem.module.css";
 import Avatar from "../UI/Avatar";
 import ActionButton from "./ActionButton";
+import React from "react";
 
 const ListItem = (props) => {
-  if (props.type === "incoming") {
-  }
-
   const onAcceptHandler = () => {
     props.acceptRequest();
   };
@@ -19,24 +17,25 @@ const ListItem = (props) => {
           image={"https://animedao.to/images/call-of-the-night.jpg"}
           size={32}
         ></Avatar>
-        <div className={classes["nametag"]}>
-          <div className={classes["panel-title"]}>{props.title}</div>
+        <div className={classes["text"]}>
+          <div className={classes["username"]}>{props.title}</div>
           <div className={classes["subtext"]}>{props.description}</div>
         </div>
       </div>
-      {props.type === "friend" && (
-        <div>
-          <button onClick={props.redirectToChat}>Chat</button>
-        </div>
-      )}
-      {props.type === "incoming" && (
-        <div className={classes["actions"]}>
-          <ActionButton onClick={onAcceptHandler}>A</ActionButton>
-          <ActionButton onClick={onAcceptHandler}>A</ActionButton>
-          {/* <button onClick={onAcceptHandler}>Accept</button>
-          <button>Reject</button> */}
-        </div>
-      )}
+      <div className={classes["actions"]}>
+        {props.type === "friend" && (
+          <React.Fragment>
+            <ActionButton onClick={props.redirectToChat}>M</ActionButton>
+            <ActionButton onClick={props.redirectToChat}>...</ActionButton>
+          </React.Fragment>
+        )}
+        {props.type === "incoming" && (
+          <React.Fragment>
+            <ActionButton onClick={props.acceptRequest}>A</ActionButton>
+            <ActionButton onClick={props.cancelRequest}>R</ActionButton>
+          </React.Fragment>
+        )}
+      </div>
     </div>
   );
 };

@@ -12,3 +12,7 @@
 .action-button:first-child{
   margin: 0;
 }
+
+.action-button:hover{
+  color: white;
+}

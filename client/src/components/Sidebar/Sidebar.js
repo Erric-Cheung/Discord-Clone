@@ -6,6 +6,7 @@ import UserPanel from "./UserPanel";
 
 const Sidebar = (props) => {
   console.log("SIDEBAR RERENDER");
+  console.log(props.directMessages);
 
   return (
     <div className={classes["sidebar"]}>
@@ -13,6 +14,8 @@ const Sidebar = (props) => {
         <SearchBar></SearchBar>
         <DirectMessageList
           directMessages={props.directMessages}
+          hideDirectMessage={props.hideDirectMessage}
+          token={props.token}
         ></DirectMessageList>
       </nav>
       <UserPanel logoutHandler={props.logoutHandler}></UserPanel>

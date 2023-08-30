@@ -35,7 +35,6 @@ const Chat = (props) => {
         users.current = data.users;
         userIds.current = users.current.map((user) => user._id);
         setMessages(data.messages);
-        // storeMessages(data.messages, params.id);
 
         // Creates title not including current user.
         let title = "";
@@ -103,6 +102,7 @@ const Chat = (props) => {
               key={item._id}
               message={item.message}
               user={item.senderName}
+              createdAt={item.createdAt}
               avatar="https://animedao.to/images/call-of-the-night.jpg"
             ></ChatMessage>
           ))}

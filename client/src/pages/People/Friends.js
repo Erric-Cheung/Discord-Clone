@@ -5,8 +5,7 @@ import ListItem from "../../components/People/ListItem";
 import { useNavigate } from "react-router-dom";
 const Friends = (props) => {
   const navigate = useNavigate();
-  const [friendList, setfriendList] = useState([]);
-  console.log(friendList);
+  const [friendList, setFriendList] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,7 +17,7 @@ const Friends = (props) => {
         });
 
         const resData = await res.json();
-        setfriendList(resData.friendList);
+        setFriendList(resData.friendList);
       } catch (err) {
         console.log(err);
       }
@@ -28,7 +27,10 @@ const Friends = (props) => {
   }, [props.token]);
 
   const redirectToChatHandler = async (userId) => {
-    if (!friendList.chatId) {
+    // Check if userId has a chatId = direct message history
+    const friend = friendList.find((friend) => friend.userId === userId);
+
+    if (!friend.chatId) {
       const res = await fetch("/channel/create-chat", {
         method: "POST",
         body: JSON.stringify({ userId: userId }),
@@ -37,10 +39,25 @@ const Friends = (props) => {
           Authorization: "Bearer " + props.token,
         },
       });
-
       const resData = await res.json();
+      console.log(resData);
       navigate(`/${resData.chatId}`);
+      props.addDirectMessage(resData);
+      return;
     }
+
+    const res = await fetch("/channel/direct-message/add", {
+      method: "PUT",
+      body: JSON.stringify({ userId: userId, chatId: friend.chatId }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + props.token,
+      },
+    });
+    const resData = await res.json();
+    console.log(resData);
+    navigate(`/${friend.chatId}`);
+    props.showDirectMessage(userId);
   };
 
   return (

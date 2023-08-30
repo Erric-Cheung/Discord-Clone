@@ -8,7 +8,10 @@ const UserSchema = new mongoose.Schema({
   birthdate: { type: Date },
   servers: [],
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  directMessages: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  // directMessages: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  directMessages: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "Direct-Message" },
+  ],
   pendingRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: "Request" }],
 });
 

@@ -6,13 +6,14 @@ const isAuth = require("../middleware/is-auth");
 const User = require("../models/user");
 const Chat = require("../models/chat");
 const Message = require("../models/message");
+const DirectMessage = require("../models/direct-message");
 
-// Route for list of pending requests
+// Route for all friends page.
 router.get("/all", isAuth, async (req, res, next) => {
   const userId = req.userId;
-  try {
-    let friendList = [];
+  let friendList = [];
 
+  try {
     const foundUser = await User.findById(userId);
     const foundUsers = await User.find({
       _id: { $in: foundUser.friends },
@@ -49,72 +50,58 @@ router.get("/all", isAuth, async (req, res, next) => {
 // Route for list of direct messages of user
 router.get("/direct-messages", isAuth, async (req, res, next) => {
   const userId = req.userId;
-  let directMessageIds;
   let directMessageUsers = [];
   let directMessageList = [];
 
-  // Finds user and gets list of ids from direct messages.
-  await User.findById(userId)
-    .then((user) => {
-      directMessageIds = user.directMessages;
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
+  try {
+    // Finds user and gets list of ids from direct messages.
+    const currUser = await User.findById(userId);
+    const directMessages = await DirectMessage.find({
+      _id: { $in: currUser.directMessages },
     });
 
-  // Finds users from the list of ids from direct messages.
-  for (const id of directMessageIds) {
-    await User.findById(id)
-      .then((user) => {
-        directMessageUsers.push(user);
-      })
-      .catch((err) => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
+    // Finds users from the ids from direct messages.
+    for (const dm of directMessages) {
+      let dmUser = await User.findById(dm.userId);
+      dmUser.visibility = dm.visiblity;
+      directMessageUsers.push(dmUser);
+    }
+
+    // Find chat ids from the list of users from direct messages
+    for (const user of directMessageUsers) {
+      const chat = await Chat.findOne({ users: [userId, user._id] });
+      if (chat) {
+        directMessageList.push({
+          username: user.username,
+          userId: user._id,
+          chatId: chat._id,
+          updatedAt: chat.updatedAt,
+          visibility: user.visibility,
+        });
+      }
+    }
+
+    // Sorted by last time updated of the chats.
+    directMessageList.sort((a, b) => {
+      return new Date(b.updatedAt) - new Date(a.updatedAt);
+    });
+
+    res.status(200).json(directMessageList);
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
   }
-
-  // Find chat ids from the list of users from direct messages
-  for (const user of directMessageUsers) {
-    await Chat.findOne({ users: [userId, user._id] })
-      .then((chat) => {
-        if (chat) {
-          directMessageList.push({
-            username: user.username,
-            userId: user._id,
-            chatId: chat._id,
-            updatedAt: chat.updatedAt,
-          });
-        }
-      })
-      .catch((err) => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-  }
-
-  // Sorted by update time
-  directMessageList.sort((a, b) => {
-    return new Date(b.updatedAt) - new Date(a.updatedAt);
-  });
-
-  res.status(200).json(directMessageList);
 });
 
-// Route for direct message
+// Route for chat page.
 router.get("/:chatId", isAuth, async (req, res, next) => {
   const chatId = req.params.chatId;
   let userIds;
   let users = [];
 
-  // Check if database has existing chat
+  // Check if database has existing chat and check if user has access.
   await Chat.findOne({
     _id: chatId,
   })
@@ -124,6 +111,13 @@ router.get("/:chatId", isAuth, async (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
+
+      if (!foundChat.users.includes(req.userId)) {
+        const error = new Error("Not authorized");
+        error.statusCode = 401;
+        throw error;
+      }
+
       userIds = foundChat.users;
     })
     .catch((err) => {
@@ -165,13 +159,13 @@ router.get("/:chatId", isAuth, async (req, res, next) => {
     });
 });
 
-// Create chat
+// Route for creating chat and new DM.
 router.post("/create-chat", isAuth, async (req, res, next) => {
   try {
     const user1 = await User.findById(req.userId);
     const user2 = await User.findById(req.body.userId);
 
-    let chat = await Chat.findOne({ users: [user1._id, user2._id] });
+    let chat = await Chat.findOne({ users: { $all: [user1._id, user2._id] } });
     if (!chat) {
       console.log("CREATING CHAT");
       const createChat = new Chat({
@@ -182,17 +176,74 @@ router.post("/create-chat", isAuth, async (req, res, next) => {
       chat = await createChat.save();
     }
 
-    // await User.updateOne(
-    //   { _id: user1._id },
-    //   { $pull: { directMessages: user2._id } }
-    // );
+    let dm = await DirectMessage.findOne({ chatId: chat._id });
+    if (!dm) {
+      console.log("CREATING DIRECT MESSAGE");
+      const createDirectMessage = new DirectMessage({
+        chatId: chat._id,
+        userId: user2._id,
+        visiblity: true,
+      });
 
+      dm = await createDirectMessage.save();
+    }
+
+    // Update visibility if dm is not created
+    await DirectMessage.updateOne({ _id: dm._id }, { visiblity: true });
+
+    // Add DM id to the user
     await User.updateOne(
       { _id: user1._id },
-      { $addToSet: { directMessages: user2._id } }
+      { $addToSet: { directMessages: dm._id } }
     );
 
-    res.status(200).json({ chatId: chat._id });
+    res.status(200).json({
+      chatId: chat._id,
+      userId: user2._id,
+      username: user2.username,
+      visibility: dm.visiblity,
+      updatedAt: chat.updatedAt,
+    });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+});
+
+// Route for closing DM.
+router.put("/direct-message/remove", isAuth, async (req, res, next) => {
+  try {
+    await DirectMessage.updateOne(
+      {
+        userId: req.body.userId,
+        chatId: req.body.chatId,
+      },
+      { visiblity: false }
+    );
+
+    res.status(200).json({ message: "Closed DM" });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+});
+
+// Route for adding DM.
+router.put("/direct-message/add", isAuth, async (req, res, next) => {
+  try {
+    await DirectMessage.updateOne(
+      {
+        userId: req.body.userId,
+        chatId: req.body.chatId,
+      },
+      { visiblity: true }
+    );
+
+    res.status(200).json({ message: "Added DM" });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;

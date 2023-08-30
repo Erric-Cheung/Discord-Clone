@@ -19,15 +19,24 @@ const DirectMessageList = (props) => {
 
       <DirectMessagesHeader></DirectMessagesHeader>
 
-      {props.directMessages.map((directMessage) => (
-        <DirectMessageItem
-          text={directMessage.username}
-          key={directMessage.chatId}
-          avatar={"https://animedao.to/images/call-of-the-night.jpg"}
-          link={`/${directMessage.chatId}`}
-          selectedTab={pathname}
-        ></DirectMessageItem>
-      ))}
+      {props.directMessages.map((directMessage) => {
+        if (!directMessage.visibility) {
+          return null;
+        }
+        return (
+          <DirectMessageItem
+            token={props.token}
+            key={directMessage.chatId}
+            avatar={"https://animedao.to/images/call-of-the-night.jpg"}
+            hideDirectMessage={props.hideDirectMessage}
+            text={directMessage.username}
+            userId={directMessage.userId}
+            chatId={directMessage.chatId}
+            link={`/${directMessage.chatId}`}
+            selectedTab={pathname}
+          ></DirectMessageItem>
+        );
+      })}
     </ul>
   );
 };

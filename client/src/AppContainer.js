@@ -19,15 +19,37 @@ import LoginLayout from "./components/Layout/LoginLayout";
 import Header from "./components/Header/Header";
 import Pending from "./pages/People/Pending";
 
-
 const AppContainer = (props) => {
   // Clear state on logout
   const [isLoading, setIsLoading] = useState(true);
   const [directMessages, setDirectMessages] = useState([]);
-  const [messages, setMessages] = useState([]);
   const ws = useRef(null);
 
-  // const notificationAudio = new Audio("../src/assets/notifcation.mp3");
+  console.log(directMessages);
+  const hideDirectMessage = (userId) => {
+    const updatedDirectMessages = directMessages.map((dm) => {
+      if (dm.userId === userId) {
+        dm.visibility = false;
+      }
+      return dm;
+    });
+    setDirectMessages(updatedDirectMessages);
+  };
+
+  const showDirectMessage = (userId) => {
+    const updatedDirectMessages = directMessages.map((dm) => {
+      if (dm.userId === userId) {
+        dm.visibility = true;
+      }
+      return dm;
+    });
+    setDirectMessages(updatedDirectMessages);
+  };
+
+  const addDirectMessage = (dm) => {
+    console.log(dm)
+    setDirectMessages([dm, ...directMessages]);
+  };
 
   useEffect(() => {
     console.log("APP FETCHING");
@@ -98,13 +120,6 @@ const AppContainer = (props) => {
     ws.current.send(JSON.stringify(data));
   };
 
-  const storeMessages = (newMessages, chatId) => {
-    setMessages((messages) => [
-      ...messages,
-      { chatId: chatId, messages: newMessages },
-    ]);
-  };
-
   const router = createBrowserRouter([
     {
       path: "/",
@@ -120,6 +135,8 @@ const AppContainer = (props) => {
             <Sidebar
               logoutHandler={props.logoutHandler}
               directMessages={directMessages}
+              hideDirectMessage={hideDirectMessage}
+              token={props.token}
             />
           }
         >
@@ -150,18 +167,36 @@ const AppContainer = (props) => {
           children: [
             {
               path: "/friends",
-              element: <Friends token={props.token}></Friends>,
+              element: (
+                <Friends
+                  token={props.token}
+                  showDirectMessage={showDirectMessage}
+                  addDirectMessage={addDirectMessage}
+                ></Friends>
+              ),
               loader: () => {
                 return redirect("/friends/all");
               },
             },
             {
               path: "/friends/online",
-              element: <Friends token={props.token}></Friends>,
+              element: (
+                <Friends
+                  token={props.token}
+                  showDirectMessage={showDirectMessage}
+                  addDirectMessage={addDirectMessage}
+                ></Friends>
+              ),
             },
             {
               path: "/friends/all",
-              element: <Friends token={props.token}></Friends>,
+              element: (
+                <Friends
+                  token={props.token}
+                  showDirectMessage={showDirectMessage}
+                  addDirectMessage={addDirectMessage}
+                ></Friends>
+              ),
             },
             {
               path: "/friends/pending",
@@ -182,10 +217,9 @@ const AppContainer = (props) => {
           element: (
             <Chat
               token={props.token}
-              sendMessageHandler={sendMessageHandler}
               userId={props.userId}
-              storeMessages={storeMessages}
               ws={ws.current}
+              sendMessageHandler={sendMessageHandler}
             ></Chat>
           ),
           loader: ({ params }) => {

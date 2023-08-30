@@ -7,7 +7,6 @@ function App() {
   const [isAuth, setIsAuth] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState(null);
-  // const ws = useRef(null);
 
   useEffect(() => {
     console.log("APP RUNNING");
@@ -46,6 +45,13 @@ function App() {
 
     checkTokenValidity();
   }, [isAuth]);
+
+  // Fetch data for user?
+  useEffect(() => {
+
+  }, )
+
+    // token + auth + user data context?
 
   const logoutHandler = () => {
     setIsAuth(false);
