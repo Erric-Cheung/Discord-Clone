@@ -6,7 +6,6 @@ import UserPanel from "./UserPanel";
 
 const Sidebar = (props) => {
   console.log("SIDEBAR RERENDER");
-  console.log(props.directMessages);
 
   return (
     <div className={classes["sidebar"]}>

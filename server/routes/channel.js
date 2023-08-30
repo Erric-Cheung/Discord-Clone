@@ -19,19 +19,19 @@ router.get("/all", isAuth, async (req, res, next) => {
       _id: { $in: foundUser.friends },
     });
 
+    // Attempts to find chat for each user and pushes to list.
     for (const user in foundUsers) {
-      let foundChat = await Chat.findOne({
-        users: [userId, foundUsers[user]._id],
+      const foundChat = await Chat.findOne({
+        users: {
+          $all: [userId, foundUsers[user]._id],
+        },
       });
 
-      let friend = {
+      const friend = {
         userId: foundUsers[user]._id,
         username: foundUsers[user].username,
+        chatId: foundChat ? foundChat._id : null,
       };
-
-      if (foundChat) {
-        friend.chatId = foundChat._id;
-      }
 
       friendList.push(friend);
     }
@@ -63,13 +63,13 @@ router.get("/direct-messages", isAuth, async (req, res, next) => {
     // Finds users from the ids from direct messages.
     for (const dm of directMessages) {
       let dmUser = await User.findById(dm.userId);
-      dmUser.visibility = dm.visiblity;
+      dmUser.visibility = dm.visibility;
       directMessageUsers.push(dmUser);
     }
 
     // Find chat ids from the list of users from direct messages
     for (const user of directMessageUsers) {
-      const chat = await Chat.findOne({ users: [userId, user._id] });
+      const chat = await Chat.findOne({ users: { $all: [userId, user._id] } });
       if (chat) {
         directMessageList.push({
           username: user.username,
@@ -164,10 +164,8 @@ router.post("/create-chat", isAuth, async (req, res, next) => {
   try {
     const user1 = await User.findById(req.userId);
     const user2 = await User.findById(req.body.userId);
-
     let chat = await Chat.findOne({ users: { $all: [user1._id, user2._id] } });
     if (!chat) {
-      console.log("CREATING CHAT");
       const createChat = new Chat({
         users: [user1._id, user2._id],
         usernames: [user1.username, user2.username],
@@ -176,33 +174,8 @@ router.post("/create-chat", isAuth, async (req, res, next) => {
       chat = await createChat.save();
     }
 
-    let dm = await DirectMessage.findOne({ chatId: chat._id });
-    if (!dm) {
-      console.log("CREATING DIRECT MESSAGE");
-      const createDirectMessage = new DirectMessage({
-        chatId: chat._id,
-        userId: user2._id,
-        visiblity: true,
-      });
-
-      dm = await createDirectMessage.save();
-    }
-
-    // Update visibility if dm is not created
-    await DirectMessage.updateOne({ _id: dm._id }, { visiblity: true });
-
-    // Add DM id to the user
-    await User.updateOne(
-      { _id: user1._id },
-      { $addToSet: { directMessages: dm._id } }
-    );
-
     res.status(200).json({
       chatId: chat._id,
-      userId: user2._id,
-      username: user2.username,
-      visibility: dm.visiblity,
-      updatedAt: chat.updatedAt,
     });
   } catch (err) {
     if (!err.statusCode) {
@@ -220,7 +193,7 @@ router.put("/direct-message/remove", isAuth, async (req, res, next) => {
         userId: req.body.userId,
         chatId: req.body.chatId,
       },
-      { visiblity: false }
+      { visibility: false }
     );
 
     res.status(200).json({ message: "Closed DM" });
@@ -235,15 +208,44 @@ router.put("/direct-message/remove", isAuth, async (req, res, next) => {
 // Route for adding DM.
 router.put("/direct-message/add", isAuth, async (req, res, next) => {
   try {
-    await DirectMessage.updateOne(
-      {
-        userId: req.body.userId,
-        chatId: req.body.chatId,
-      },
-      { visiblity: true }
+    const user1 = await User.findById(req.userId);
+    const user2 = await User.findById(req.body.userId);
+    const chat = await Chat.findById(req.body.chatId);
+    let dm = await DirectMessage.findOne({
+      $and: [{ chatId: chat._id }, { userId: user2._id }],
+    });
+
+    let isCreated = false;
+    if (!dm) {
+      const createDirectMessage = new DirectMessage({
+        chatId: chat._id,
+        userId: user2._id,
+        visibility: true,
+      });
+
+      dm = await createDirectMessage.save();
+      isCreated = true;
+    }
+
+    // Add DM id to the user
+    await User.updateOne(
+      { _id: user1._id },
+      { $addToSet: { directMessages: dm._id } }
     );
 
-    res.status(200).json({ message: "Added DM" });
+    // Update visibility if dm already exists.
+    await DirectMessage.updateOne({ _id: dm._id }, { visibility: true });
+
+    res.status(200).json({
+      dm: {
+        chatId: chat._id,
+        userId: user2._id,
+        username: user2.username,
+        visibility: dm.visibility,
+        updatedAt: chat.updatedAt,
+      },
+      createdDM: isCreated,
+    });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;

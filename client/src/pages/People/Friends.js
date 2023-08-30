@@ -27,10 +27,11 @@ const Friends = (props) => {
   }, [props.token]);
 
   const redirectToChatHandler = async (userId) => {
-    // Check if userId has a chatId = direct message history
+    // Check if userId has a existing chatId.
     const friend = friendList.find((friend) => friend.userId === userId);
+    let chatId = friend.chatId;
 
-    if (!friend.chatId) {
+    if (!chatId) {
       const res = await fetch("/channel/create-chat", {
         method: "POST",
         body: JSON.stringify({ userId: userId }),
@@ -40,23 +41,24 @@ const Friends = (props) => {
         },
       });
       const resData = await res.json();
-      console.log(resData);
-      navigate(`/${resData.chatId}`);
-      props.addDirectMessage(resData);
-      return;
+      chatId = resData.chatId;
     }
 
     const res = await fetch("/channel/direct-message/add", {
       method: "PUT",
-      body: JSON.stringify({ userId: userId, chatId: friend.chatId }),
+      body: JSON.stringify({ userId: userId, chatId: chatId }),
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + props.token,
       },
     });
     const resData = await res.json();
-    console.log(resData);
-    navigate(`/${friend.chatId}`);
+    if (resData.createdDM) {
+      navigate(`/${chatId}`);
+      props.addDirectMessage(resData.dm);
+      return;
+    }
+    navigate(`/${chatId}`);
     props.showDirectMessage(userId);
   };
 

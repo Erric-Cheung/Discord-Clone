@@ -1,9 +1,9 @@
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const WebSocket = require("ws");
 const url = require("url");
-
 const authRoutes = require("./routes/auth");
 const channelRoutes = require("./routes/channel");
 const userRoutes = require("./routes/user");
@@ -13,6 +13,7 @@ const Chat = require("./models/chat");
 const Message = require("./models/message");
 const User = require("./models/user");
 
+const uri = process.env.MONGO_URI;
 const PORT = process.env.PORT || 3001;
 
 const app = express();
@@ -34,9 +35,7 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-  .connect(
-    "mongodb+srv://erriccheung:7fXeGb6MwPwCVmOV@cluster0.ifep27x.mongodb.net/?retryWrites=true&w=majority"
-  )
+  .connect(uri)
   .then((result) => {
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}.`);
