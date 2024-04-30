@@ -1,9 +1,10 @@
 import Header from "../../components/Header/Header";
 import classes from "./Chat.module.css";
 import ChatForm from "../../components/Chat/ChatForm";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import ChatMessage from "../../components/Chat/ChatMessage";
 import { useLoaderData, useParams } from "react-router-dom";
+import { WebSocketContext } from "../../store/websocket-context";
 
 const Chat = (props) => {
   const [messages, setMessages] = useState([]);
@@ -11,11 +12,8 @@ const Chat = (props) => {
   const params = useParams();
   const users = useRef(null);
   const userIds = useRef(null);
-  // const storedMessages = useLoaderData();
-  // const { storeMessages } = props;
-
-  // if stored message exists, get messages
-  // on chat exit, store messages so app is not rerendered ?
+  const { sendMessageHandler } = useContext(WebSocketContext);
+  const { currentChatMessages, setCurrentChatMessages } = props;
 
   console.log("CHAT RERENDERED");
 
@@ -34,7 +32,7 @@ const Chat = (props) => {
 
         users.current = data.users;
         userIds.current = users.current.map((user) => user._id);
-        setMessages(data.messages);
+        setCurrentChatMessages(data.messages);
 
         // Creates title not including current user.
         let title = "";
@@ -53,24 +51,9 @@ const Chat = (props) => {
       }
     };
 
-    console.log("FETCHING MESSAGES");
+    console.log("~~~~FETCHING MESSAGES~~~~~");
     fetchData();
-  }, [props.token, props.userId, params.id]);
-
-  // Updates websocket's onMessage and reverts on cleanup.
-  useEffect(() => {
-    const prevOnMessage = props.ws.onmessage;
-    props.ws.onmessage = (message) => {
-      // Handles updating messages array on message.
-      console.log("IN CHAT ");
-      let data = JSON.parse(message.data);
-      addMessage(data);
-    };
-
-    return () => {
-      props.ws.onmessage = prevOnMessage;
-    };
-  }, [props.ws]);
+  }, [props.token, props.userId, params.id, setCurrentChatMessages]);
 
   const submitMessageHandler = (message) => {
     const data = {
@@ -81,7 +64,7 @@ const Chat = (props) => {
       userIds: userIds.current,
     };
 
-    props.sendMessageHandler(data);
+    sendMessageHandler(data);
   };
 
   const addMessage = (newMessage) => {
@@ -97,7 +80,7 @@ const Chat = (props) => {
       ></Header>
       <div className={classes["messages-wrapper"]}>
         <ol className={classes["messages"]}>
-          {messages.map((item) => (
+          {currentChatMessages.map((item) => (
             <ChatMessage
               key={item._id}
               message={item.message}

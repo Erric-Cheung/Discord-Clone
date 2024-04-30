@@ -101,6 +101,8 @@ router.get("/:chatId", isAuth, async (req, res, next) => {
   let userIds;
   let users = [];
 
+  // Check if user is authorized to this chat page.
+
   // Check if database has existing chat and check if user has access.
   await Chat.findOne({
     _id: chatId,

@@ -7,6 +7,7 @@ const User = require("../models/user");
 const router = express.Router();
 const isAuth = require("../middleware/is-auth");
 
+// Route for logging in to an account.
 router.post(
   "/login",
   [
@@ -54,6 +55,7 @@ router.post(
   }
 );
 
+// Route for registering for an account
 router.post(
   "/register",
   [

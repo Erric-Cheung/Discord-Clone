@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   createBrowserRouter,
-  createMemoryRouter,
   Outlet,
   redirect,
   RouterProvider,
@@ -18,14 +17,16 @@ import AddFriend from "./pages/People/AddFriend";
 import LoginLayout from "./components/Layout/LoginLayout";
 import Header from "./components/Header/Header";
 import Pending from "./pages/People/Pending";
+import { UserContext } from "./store/user-context";
+import { WebSocketProvider } from "./store/websocket-context";
 
 const AppContainer = (props) => {
   // Clear state on logout
   const [isLoading, setIsLoading] = useState(true);
   const [directMessages, setDirectMessages] = useState([]);
-  const ws = useRef(null);
+  const [currentChatMessages, setCurrentChatMessages] = useState([]);
+  const userCtx = useContext(UserContext);
 
-  console.log(directMessages);
   const hideDirectMessage = (userId) => {
     const updatedDirectMessages = directMessages.map((dm) => {
       if (dm.userId === userId) {
@@ -47,8 +48,12 @@ const AppContainer = (props) => {
   };
 
   const addDirectMessage = (dm) => {
-    console.log(dm)
+    console.log(dm);
     setDirectMessages([dm, ...directMessages]);
+  };
+
+  const addCurrentChatMessage = (newMessage) => {
+    setCurrentChatMessages((messages) => [...messages, newMessage]);
   };
 
   useEffect(() => {
@@ -81,67 +86,35 @@ const AppContainer = (props) => {
     fetchData();
   }, [props.token]);
 
-  useEffect(() => {
-    console.log("APP WEBSOCKET");
-    if (!props.userId) {
-      return;
-    }
-
-    ws.current = new WebSocket(`ws://localhost:8080/?userId=${props.userId}`);
-
-    ws.current.onopen = () => {
-      console.log("Connection Open");
-      const data = {
-        userId: props.userId,
-      };
-      ws.current.send(JSON.stringify(data));
-    };
-
-    ws.current.onmessage = (message) => {
-      // Handles notifcation
-      console.log("IN APP CONTAINER");
-      let data = JSON.parse(message.data);
-      console.log(data);
-    };
-
-    ws.current.onclose = () => {
-      console.log("Connection Closed");
-    };
-    ws.current.onerror = () => {};
-
-    return () => {
-      if (ws.current) {
-        ws.current.close();
-      }
-    };
-  }, [props.userId]);
-
-  const sendMessageHandler = (data) => {
-    ws.current.send(JSON.stringify(data));
-  };
-
   const router = createBrowserRouter([
     {
       path: "/",
       loader: () => {
-        if (!props.isAuth && !isLoading) return redirect("/login");
-
+        if (!props.isAuth && !isLoading) {
+          console.log("NOT LOGGED IN REDIRECT");
+          return redirect("/login");
+        }
         return null;
       },
       element: (
-        <AppLayout
-          nav={<ServerNav />}
-          sidebar={
-            <Sidebar
-              logoutHandler={props.logoutHandler}
-              directMessages={directMessages}
-              hideDirectMessage={hideDirectMessage}
-              token={props.token}
-            />
-          }
+        <WebSocketProvider
+          userId={userCtx.userId}
+          addCurrentChatMessage={addCurrentChatMessage}
         >
-          <Outlet></Outlet>
-        </AppLayout>
+          <AppLayout
+            // nav={<ServerNav />}
+            sidebar={
+              <Sidebar
+                logoutHandler={props.logoutHandler}
+                directMessages={directMessages}
+                hideDirectMessage={hideDirectMessage}
+                token={props.token}
+              />
+            }
+          >
+            <Outlet></Outlet>
+          </AppLayout>
+        </WebSocketProvider>
       ),
       children: [
         {
@@ -218,8 +191,8 @@ const AppContainer = (props) => {
             <Chat
               token={props.token}
               userId={props.userId}
-              ws={ws.current}
-              sendMessageHandler={sendMessageHandler}
+              currentChatMessages={currentChatMessages}
+              setCurrentChatMessages={setCurrentChatMessages}
             ></Chat>
           ),
           loader: ({ params }) => {

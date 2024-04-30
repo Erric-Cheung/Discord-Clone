@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { UserContext } from "./store/user-context";
 
 import AppContainer from "./AppContainer";
 
@@ -47,11 +48,9 @@ function App() {
   }, [isAuth]);
 
   // Fetch data for user?
-  useEffect(() => {
+  useEffect(() => {});
 
-  }, )
-
-    // token + auth + user data context?
+  // token + auth + user data context?
 
   const logoutHandler = () => {
     setIsAuth(false);
@@ -109,14 +108,24 @@ function App() {
   }
 
   return (
-    <AppContainer
-      isAuth={isAuth}
-      token={token}
-      userId={userId}
-      logoutHandler={logoutHandler}
-      loginHandler={loginHandler}
-      registerHandler={registerHandler}
-    ></AppContainer>
+    <UserContext.Provider
+      value={{
+        token: token,
+        userId: userId,
+        logoutHandler: logoutHandler,
+        loginHandler: loginHandler,
+        registerHandler: registerHandler,
+      }}
+    >
+      <AppContainer
+        isAuth={isAuth}
+        token={token}
+        userId={userId}
+        logoutHandler={logoutHandler}
+        loginHandler={loginHandler}
+        registerHandler={registerHandler}
+      ></AppContainer>
+    </UserContext.Provider>
   );
 }
 

@@ -1,10 +1,12 @@
-import { useContext } from "react";
+import React from "react";
 
-export const UserContext = createContext({
-    token: null,
-    userId: null,
-    username: null,
-    loginHandler: () => {},
-    logoutHandler: () => {},
-    registerHandler: () => {},
-  });
+// Context for user info as data rarely changes.
+
+export const UserContext = React.createContext({
+  token: null,
+  userId: null,
+  username: null,
+  loginHandler: () => {},
+  logoutHandler: () => {},
+  registerHandler: () => {},
+});

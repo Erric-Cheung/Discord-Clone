@@ -6,7 +6,7 @@ const Avatar = (props) => {
       <img
         style={{ width: `${props.size}px`, height: `${props.size}px` }}
         className={`${classes["avatar-image"]}`}
-        src={props.image}
+        src={"https://assets.mofoprod.net/network/images/discord.width-250.jpg"}
         alt=" "
       ></img>
     </div>
