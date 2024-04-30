@@ -66,6 +66,7 @@ export const WebSocketProvider = (props) => {
     ws.current.send(JSON.stringify(data));
   };
 
+  
   return (
     <WebSocketContext.Provider value={{ sendMessageHandler }}>
       {props.children}
