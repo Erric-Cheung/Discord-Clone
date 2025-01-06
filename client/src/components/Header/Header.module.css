@@ -1,0 +1,60 @@
+.header {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  background-color: #313338;
+  height: 48px;
+  padding: 0 8px;
+  outline: 0;
+  box-shadow: 0px 1px 0px #282a2d;
+  min-width: 0;
+  width: 100%;
+  flex: 0 0 auto;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.children-container {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  width: 0;
+}
+
+.toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.icon-wrapper {
+  width: 24px;
+  height: 24px;
+  margin: 0 8px;
+  cursor: pointer;
+}
+
+.avatar-wrapper {
+  width: 24px;
+  height: 24px;
+  margin-left: 8px;
+  margin-right: 12px;
+}
+
+.title-wrapper {
+  margin: 0 8px 0 0;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  vertical-align: baseline;
+  color: white;
+}

@@ -1,0 +1,15 @@
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader {
+  padding: 40px;
+}
+
+.text {
+  padding-top: 8px;
+}

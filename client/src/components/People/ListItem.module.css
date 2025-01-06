@@ -1,0 +1,60 @@
+.container {
+  display: flex;
+  align-items: center;
+  height: 62px;
+  margin-left: 30px;
+  margin-right: 20px;
+  cursor: pointer;
+  border-top: 1px solid #404246;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  flex: 1 1 auto;
+  width: 0;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 4px;
+  padding-left: 8px;
+  padding-top: 4px;
+  overflow: hidden;
+}
+
+.username {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.subtext {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 13px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  margin-left: 8px;
+}
+
+.container:hover {
+  background-color: #404246;
+  margin: 0 10px 0 20px;
+  padding: 16px 10px;
+  border-radius: 8px;
+}

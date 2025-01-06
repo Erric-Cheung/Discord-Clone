@@ -1,0 +1,25 @@
+.badge {
+  background-color: red;
+  color: #1e2124;
+  border-radius: 16px;
+  border: solid;
+
+  min-width: 16px;
+  min-height: 16px;
+  height: 16px;
+  text-align: center;
+
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 16px;
+
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+.amount {
+  color: white;
+}

@@ -1,0 +1,56 @@
+.container {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 8px;
+  background-color: #27282a;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  min-width: 120px;
+  padding-left: 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.nametag {
+  padding-bottom: 4px;
+  padding-left: 8px;
+  padding-top: 4px;
+}
+
+.panel-title {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+  color: white;
+}
+
+.subtext {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 13px;
+}
+
+.user-info:hover {
+  background-color: #404246;
+}
+
+.buttons {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.button-container {
+  padding: 4px 16px;
+  border: 0;
+  background-color: #404246;
+  color: white;
+  cursor: pointer;
+}
+
+.button-content {
+}

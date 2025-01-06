@@ -1,0 +1,45 @@
+.message {
+  position: relative;
+  margin-top: 1.0625rem;
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
+  padding-left: 72px;
+  color: white;
+
+  /* background-color: white; */
+}
+
+.avatar {
+  position: absolute;
+  left: 16px;
+}
+
+.contents {
+}
+
+.header {
+  padding: 0;
+  margin: 0;
+}
+
+.username {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-right: 0.25rem;
+}
+
+.timestamp {
+  margin-left: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: grey;
+}
+
+.message-content {
+  font-size: 1rem;
+  line-height: 1.375rem;
+}
+
+.group-spacing {
+  margin-top: 1.0625rem;
+}

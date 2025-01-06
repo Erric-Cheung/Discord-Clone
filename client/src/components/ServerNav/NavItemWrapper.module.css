@@ -1,0 +1,8 @@
+.wrapper {
+  position: relative;
+  margin: 0 0 8px;
+  display: flex;
+  justify-content: center;
+  width: 72px;
+  outline: 0;
+}
