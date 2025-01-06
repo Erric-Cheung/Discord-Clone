@@ -14,7 +14,6 @@ const ListItem = (props) => {
     <div className={classes["container"]}>
       <div className={classes["user-info"]}>
         <Avatar
-          image={"https://animedao.to/images/call-of-the-night.jpg"}
           size={32}
         ></Avatar>
         <div className={classes["text"]}>

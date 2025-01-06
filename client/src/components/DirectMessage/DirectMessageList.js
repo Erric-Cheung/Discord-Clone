@@ -12,7 +12,6 @@ const DirectMessageList = (props) => {
 
       <DirectMessageItem
         text="Friends"
-        avatar="https://animedao.to/images/call-of-the-night.jpg"
         link="/friends"
         selectedTab={pathname}
       ></DirectMessageItem>
@@ -27,7 +26,6 @@ const DirectMessageList = (props) => {
           <DirectMessageItem
             token={props.token}
             key={directMessage.chatId}
-            avatar={"https://animedao.to/images/call-of-the-night.jpg"}
             hideDirectMessage={props.hideDirectMessage}
             text={directMessage.username}
             userId={directMessage.userId}

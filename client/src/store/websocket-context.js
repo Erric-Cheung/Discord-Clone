@@ -82,7 +82,7 @@ export const WebSocketProvider = (props) => {
       }
 
       // Sender already has DM updated
-      if (!data.dmIsUpdated) {
+      if (!data.dmIsUpdated && !data.dmCreated) {
         showDirectMessage(dm.userId);
       }
 
@@ -91,27 +91,27 @@ export const WebSocketProvider = (props) => {
         playNotification();
       }
     };
-  }, [addCurrentChatMessage, id]);
+  }, [addCurrentChatMessage, addDirectMessage, id]);
 
   // WebRTC
-  useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((currentStream) => {
-        setStream(currentStream);
-        if (localStream.current) {
-          localStream.current.srcObject = currentStream;
-        }
-      });
+  // useEffect(() => {
+  //   navigator.mediaDevices
+  //     .getUserMedia({ video: true, audio: true })
+  //     .then((currentStream) => {
+  //       setStream(currentStream);
+  //       if (localStream.current) {
+  //         localStream.current.srcObject = currentStream;
+  //       }
+  //     });
 
-    ws.current.addEventListener("message", (message) => {
-      console.log("SECOND ON MESSAGE");
-      let data = JSON.parse(message.data);
-      if (data) {
-        console.log(data);
-      }
-    });
-  }, []);
+  //   ws.current.addEventListener("message", (message) => {
+  //     console.log("SECOND ON MESSAGE");
+  //     let data = JSON.parse(message.data);
+  //     if (data) {
+  //       console.log(data);
+  //     }
+  //   });
+  // }, []);
 
   const startCallHandler = async (id) => {
     // const configuration = {
