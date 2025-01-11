@@ -12,7 +12,15 @@ const Chat = (props) => {
   const params = useParams();
   const users = useRef(null);
   const userIds = useRef(null);
-  const { sendMessageHandler, localStream } = useContext(WebSocketContext);
+  const {
+    sendMessageHandler,
+    startCallHandler,
+    answerCallHandler,
+    endCallHandler,
+    audioRef,
+    isInCall,
+    receivingCall,
+  } = useContext(WebSocketContext);
   const { currentChatMessages, setCurrentChatMessages } = props;
 
   console.log("CHAT RERENDERED");
@@ -67,6 +75,14 @@ const Chat = (props) => {
     sendMessageHandler(data);
   };
 
+  const startCall = () => {
+    users.current.forEach((user) => {
+      if (user._id !== props.userId) {
+        startCallHandler(user._id);
+      }
+    });
+  };
+
   return (
     <div className={classes["container"]}>
       <Header
@@ -74,6 +90,11 @@ const Chat = (props) => {
         avatar=""
         tabBar={false}
         call={true}
+        receivingCall={receivingCall}
+        isInCall={isInCall}
+        startCall={startCall}
+        answerCall={answerCallHandler}
+        endCall={endCallHandler}
       ></Header>
       <div className={classes["messages-wrapper"]}>
         <ol className={classes["messages"]}>
@@ -89,6 +110,8 @@ const Chat = (props) => {
           <div className={classes["messages-spacer"]}></div>
         </ol>
       </div>
+
+      {isInCall && <audio ref={audioRef} autoPlay={true}></audio>}
       <ChatForm submitMessage={submitMessageHandler}></ChatForm>
       {/* <video ref={localStream} muted autoPlay width="600px" playsInline></video> */}
     </div>

@@ -19,16 +19,16 @@ export const WebSocketProvider = (props) => {
     showDirectMessage,
     playNotification,
   } = props;
-  const [stream, setStream] = useState();
-  const [recievingCall, setRecievingCall] = useState(); // isRecievingCall, callerName
+
+  const [receivingCall, setReceivingCall] = useState(); // isRecievingCall, callerName
+  const [isInCall, setIsInCall] = useState(false);
+
   const localStream = useRef(); // Local client's webcam/audio
-  const remoteStream = useRef(); // Remote client's webcam/audio
-
-  const configuration = {
-    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-  };
-
-  const peerConnection = new RTCPeerConnection(configuration);
+  const incomingOfferRef = useRef();
+  const incomingAnswerRef = useRef();
+  const connectionRef = useRef();
+  const connectedToId = useRef();
+  const audioRef = useRef();
 
   // Creates websocket
   useEffect(() => {
@@ -71,64 +71,164 @@ export const WebSocketProvider = (props) => {
       const msg = data.msg;
       const dm = data.dm;
 
-      // Update messages if user is on same chat page
-      if (msg.chatId === id) {
-        addCurrentChatMessage(msg);
+      // chat message
+      if (data.type === "message") {
+        // Update messages if user is on same chat page
+        if (msg.chatId === id) {
+          addCurrentChatMessage(msg);
+        }
+
+        // Updates DM list
+        if (data.dmCreated) {
+          addDirectMessage(dm);
+        }
+
+        // Sender already has DM updated
+        if (!data.dmIsUpdated && !data.dmCreated) {
+          showDirectMessage(dm.userId);
+        }
+
+        // Create notification if user is not on same chat page
+        if (data.dm) {
+          playNotification();
+        }
       }
 
-      // Updates DM list
-      if (data.dmCreated) {
-        addDirectMessage(dm);
+      // incoming call
+      if (data.type === "offer") {
+        setReceivingCall(true);
+        connectedToId.current = data.callerId;
+        incomingOfferRef.current = data.offer;
       }
 
-      // Sender already has DM updated
-      if (!data.dmIsUpdated && !data.dmCreated) {
-        showDirectMessage(dm.userId);
+      // call accepptd
+      if (data.type === "answer") {
+        incomingAnswerRef.current = data.answer;
+        handleAnswer(data.answer);
       }
 
-      // Create notification if user is not on same chat page
-      if (data.dm) {
-        playNotification();
+      // end call
+      if (data.type === "disconnect") {
+        setIsInCall(false);
+        connectionRef.current.close();
+      }
+
+      // candidate
+      if (data.type === "candidate") {
+        handleCandidate(data.candidate);
       }
     };
-  }, [addCurrentChatMessage, addDirectMessage, id]);
+  }, [
+    addCurrentChatMessage,
+    addDirectMessage,
+    id,
+    playNotification,
+    showDirectMessage,
+  ]);
 
-  // WebRTC
-  // useEffect(() => {
-  //   navigator.mediaDevices
-  //     .getUserMedia({ video: true, audio: true })
-  //     .then((currentStream) => {
-  //       setStream(currentStream);
-  //       if (localStream.current) {
-  //         localStream.current.srcObject = currentStream;
-  //       }
-  //     });
-
-  //   ws.current.addEventListener("message", (message) => {
-  //     console.log("SECOND ON MESSAGE");
-  //     let data = JSON.parse(message.data);
-  //     if (data) {
-  //       console.log(data);
-  //     }
-  //   });
-  // }, []);
-
+  // Starts call to user id
   const startCallHandler = async (id) => {
-    // const configuration = {
-    //   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-    // };
-    // const peerConnection = new RTCPeerConnection(configuration);
+    await startConnection();
+    setIsInCall(true);
 
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
+    connectedToId.current = id;
+    const offer = await connectionRef.current.createOffer();
+    await connectionRef.current.setLocalDescription(offer);
+    ws.current.send(
+      JSON.stringify({
+        type: "startCall",
+        callerId: userId,
+        recipientId: id,
+        offer: offer,
+      })
+    );
   };
 
-  const answerCallHandler = () => {};
+  // when we get an offer
+  const answerCallHandler = async () => {
+    await startConnection();
+    setIsInCall(true);
+    setReceivingCall(false);
 
-  const leaveCallhandler = () => {};
+    connectionRef.current.setRemoteDescription(
+      new RTCSessionDescription(incomingOfferRef.current)
+    );
+    const answer = await connectionRef.current.createAnswer();
+    await connectionRef.current.setLocalDescription(answer);
+    ws.current.send(
+      JSON.stringify({
+        type: "answerCall",
+        answer: answer,
+        callerId: connectedToId.current,
+      })
+    );
+  };
+
+  const endCallHandler = async () => {
+    ws.current.send(
+      JSON.stringify({
+        type: "disconnect",
+        endCallerId: userId,
+        recipientId: connectedToId.current,
+      })
+    );
+  };
+
+  // when we get an answer
+  const handleAnswer = async (answer) => {
+    const remoteDesc = new RTCSessionDescription(answer);
+    await connectionRef.current.setRemoteDescription(remoteDesc);
+  };
+
+  // when we get ice candidate
+  const handleCandidate = (candidate) => {
+    connectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+  };
 
   const sendMessageHandler = (data) => {
     ws.current.send(JSON.stringify(data));
+  };
+
+  // creates the peer connection
+  const startConnection = async () => {
+    await navigator.mediaDevices
+      .getUserMedia({ video: false, audio: true })
+      .then((currentStream) => {
+        let configuration = {
+          iceServers: [{ url: "stun:stun2.1.google.com:19302" }],
+        };
+
+        connectionRef.current = new RTCPeerConnection(configuration);
+
+        currentStream.getTracks().forEach((track) => {
+          connectionRef.current.addTrack(track, currentStream);
+        });
+
+        // adds remote stream
+        connectionRef.current.ontrack = (event) => {
+          const [remoteStream] = event.streams;
+          audioRef.current.srcObject = remoteStream;
+        };
+
+        connectionRef.current.onicecandidate = (event) => {
+          if (event.candidate) {
+            console.log(connectedToId.current);
+            ws.current.send(
+              JSON.stringify({
+                type: "candidate",
+                candidate: event.candidate,
+                recipientId: connectedToId.current,
+              })
+            );
+          }
+        };
+
+        connectionRef.current.onconnectionstatechange = (event) => {
+          console.log(connectionRef.current.connectionState);
+          if (connectionRef.current.connectionState === "connected") {
+          }
+        };
+      });
   };
 
   return (
@@ -137,9 +237,10 @@ export const WebSocketProvider = (props) => {
         sendMessageHandler,
         startCallHandler,
         answerCallHandler,
-        leaveCallhandler,
-        localStream,
-        stream,
+        endCallHandler,
+        isInCall,
+        receivingCall,
+        audioRef,
       }}
     >
       {props.children}

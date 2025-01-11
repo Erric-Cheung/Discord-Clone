@@ -113,6 +113,7 @@ mongoose
                 if (client.id == recipient._id) {
                   client.send(
                     JSON.stringify({
+                      type: "message",
                       msg: createdMsg,
                       dm: {
                         chatId: chat._id,
@@ -136,13 +137,67 @@ mongoose
           }
         }
 
-        if (data.type === "callUser") {
+        if (data.type === "startCall") {
+          console.log("STARTING CALL TO ", data.recipientId);
+
+          // id to offer call to
+          const callingId = data.recipientId;
+          wss.clients.forEach((client) => {
+            if (client.id == callingId) {
+              client.send(
+                JSON.stringify({
+                  type: "offer",
+                  offer: data.offer,
+                  callerId: data.callerId,
+                })
+              );
+              console.log("SENT OFFER");
+            }
+          });
         }
 
         if (data.type === "answerCall") {
+          const callerId = data.callerId;
+          wss.clients.forEach((client) => {
+            if (client.id == callerId) {
+              client.send(
+                JSON.stringify({
+                  type: "answer",
+                  answer: data.answer,
+                })
+              );
+              console.log("SENT ANSWER");
+            }
+          });
         }
 
+        if (data.type === "candidate") {
+          const recipientId = data.recipientId;
+          wss.clients.forEach((client) => {
+            if (client.id == recipientId) {
+              client.send(
+                JSON.stringify({
+                  type: "candidate",
+                  candidate: data.candidate,
+                })
+              );
+              console.log("SENT CANDIDATE");
+            }
+          });
+        }
+        
         if (data.type === "disconnect") {
+          const recipientId = data.recipientId;
+          const endCallerId = data.endCallerId;
+          wss.clients.forEach((client) => {
+            if (client.id == recipientId || client.id == endCallerId) {
+              client.send(
+                JSON.stringify({
+                  type: "disconnect",
+                })
+              );
+            }
+          });
         }
       });
     });

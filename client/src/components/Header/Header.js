@@ -5,6 +5,7 @@ import classes from "./Header.module.css";
 import TabBar from "./TabBar";
 
 const Header = (props) => {
+
   return (
     <section className={classes["header"]}>
       <div className={classes["children-container"]}>
@@ -26,9 +27,19 @@ const Header = (props) => {
       </div>
 
       <div className={classes["toolbar"]}>
-        {props.call && (
+        {props.call && !props.receivingCall && !props.isInCall && (
           <div className={classes["icon-wrapper"]} onClick={props.startCall}>
             Call
+          </div>
+        )}
+        {props.receivingCall && (
+          <div className={classes["icon-wrapper"]} onClick={props.answerCall}>
+            Answer Call
+          </div>
+        )}
+        {props.isInCall && (
+          <div className={classes["icon-wrapper"]} onClick={props.endCall}>
+            End Call
           </div>
         )}
         <Divider></Divider>

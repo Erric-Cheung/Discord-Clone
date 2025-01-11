@@ -153,7 +153,6 @@ const AppContainer = (props) => {
             <React.Fragment>
               <Header
                 title="Friends"
-                avatar="https://animedao.to/images/call-of-the-night.jpg"
                 tabBar={true}
               ></Header>
               <Outlet></Outlet>

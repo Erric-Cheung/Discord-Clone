@@ -10,7 +10,7 @@ const Sidebar = (props) => {
   return (
     <div className={classes["sidebar"]}>
       <nav className={classes["sidebar-nav"]}>
-        <SearchBar></SearchBar>
+        {/* <SearchBar></SearchBar> */}
         <DirectMessageList
           directMessages={props.directMessages}
           hideDirectMessage={props.hideDirectMessage}
