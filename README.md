@@ -1,4 +1,5 @@
 # Discord-Clone
+
 A clone of the popular chatting application Discord. 
 Create a free account and add your friends with a username, send messages and start a voice chat with connected users.
 
